@@ -25,6 +25,56 @@ console.log(this)
 
 ## 内置函数的this绑定
 
+### setTimeout
+
+  **this->window**
+
+```js
+//setTimeout
+function hySetTimeout(fn, duration) {
+  fn.call("abc")
+}
+
+hySetTimeout(function() {
+  console.log(this) // abc
+}, 3000)
+
+setTimeout(function() {
+  console.log(this) //  this->window
+}, 2000)
+```
+
+### 数组.forEach/map/filter/find
+
+**forEach(arg1,this的指向)**
+
+![image-20220609232556465](/Users/wsp/Library/Application Support/typora-user-images/image-20220609232556465.png)
+
+```js
+var names = ["abc", "cba", "nba"]
+names.forEach(function(item) {//abc
+  console.log(item, this)
+}, "abc")
+///
+names.map(function(item) {//cba
+  console.log(item, this)
+}, "cba")
+```
+
+
+
+### .onclick
+
+**this->调用的元素对象**
+
+```js
+const boxDiv = document.querySelector('.box')
+boxDiv.onclick = function() {
+  console.log(this) //  this->boxDiv
+}
+//理解为:boxDiv.onclick() 隐式绑定
+```
+
 
 
 ## 函数中this指向
@@ -293,7 +343,7 @@ Js中的函数可以当做一个类的构造函数来使用，也就是使用new
 
 1. 创建一个全新的对象;
 2. 这个新对象会被执行prototype连接;
-3. 这个新对象会绑定到函数调用的this上(this的绑定在这个步骤完成);
+3. 这个**新对象会绑定到函数调用的this**上(this的绑定在这个步骤完成);
 4. 如果函数没有返回其他对象，表达式会返回这个新对象;
 
 ```js
@@ -313,17 +363,386 @@ console.log(p1.name, p1.age)
 
 ## 规则优先级
 
+>  **new绑定 > 显示绑定(apply/call/bind) > 隐式绑定(obj.foo()) > 默认绑定(独立函数调用)**
+
+**默认规则的优先级最低**
+
+**显示绑定优先级高于隐式绑定**
+
+**bind>call**
+
+```js
+var obj = {
+  name: "obj",
+  foo: function() {
+    console.log(this)
+  }
+}
+
+// obj.foo()
+
+// 1.call/apply的显示绑定高于隐式绑定
+obj.foo.apply('abc')//abc
+obj.foo.call('abc')//abc
+
+// 2.bind的优先级高于隐式绑定
+var bar = obj.foo.bind("cba")
+bar()//cba
 
 
-- **默认规则的优先级最低**
+// 3.更明显的比较
+function foo() {
+  console.log(this)
+}
 
-- **显示绑定优先级高于隐式绑定**
+var obj = {
+  name: "obj",
+  foo: foo.bind("aaa")
+}
 
-- **new绑定优先级高于隐式绑定**
+obj.foo()//aaa
 
-- **new绑定优先级高于bind**
+//bind>call
+foo.bind('abc').call('def')//abc
 
-  - new绑定和call、apply是不允许同时使用的，所以不存在谁的优先级更高
+```
 
-  - new绑定可以和bind一起使用，new绑定优先级更高
+**new绑定优先级高于隐式绑定**
+
+```js
+var obj = {
+  name: "obj",
+  foo: function() {
+    console.log(this)
+  }
+}
+
+// new的优先级高于隐式绑定
+var f = new obj.foo() //foo {}
+
+```
+
+**new绑定优先级高于bind**
+
+- new绑定和call、apply是不允许同时使用的，所以不存在谁的优先级更高
+
+- new绑定可以和bind一起使用，new绑定优先级更高
+
+```js
+// new的优先级高于bind
+function foo() {
+  console.log(this)
+}
+var bar = foo.bind("aaa")
+var obj = new bar()//foo{}
+
+```
+
+
+
+## 绑定规则的例外情况
+
+### 忽略显示绑定
+
+如果在显示绑定中，我们传入一个null或者undefined，那么这个显示绑定会被忽略，使用默认规则:
+
+(可以绑定在空对象{})
+
+```js
+function foo() {
+  console.log(this)
+}
+
+foo.apply("abc")//String {'abc'}
+foo.apply({})//{}
+
+// apply/call/bind: 当传入null/undefined时, 自动将this绑定成全局对象
+foo.apply(null)//window
+foo.apply(undefined)//window
+
+var bar = foo.bind(null)//window
+bar()
+```
+
+### 间接函数引用
+
+创建一个函数的**间接引用**，这种情况使用默认绑定规则。
+
+- 赋值(obj2.foo = obj1.foo)(的结果是foo函数;
+- foo函数被直接调用，那么是默认绑定;
+
+```js
+var obj1 = {
+  name: "obj1",
+  foo: function() {
+    console.log(this)
+  }
+}
+var obj2 = {
+  name: "obj2"
+};//分号不能省略
+// 隐式绑定
+obj2.bar = obj1.foo
+obj2.bar()//{name: 'obj2', bar: ƒ}
+//间接引用
+(obj2.bar = obj1.foo)()//属于独立的函数调用
+// 当用()括起来的时候,相当于把两段代码看成一个整体
+```
+
+### ES6箭头函数
+
+箭头函数也就是不绑定this，而是**根据外层作用域来决定this。** (函数有作用域 对象没有作用域)
+
+>  (函数有作用域 对象没有作用域)
+>
+> ```js
+> var obj = {
+>   name: "obj",
+>   foo: () =>{
+> 	//上层作用域是全局
+>   }
+> }
+> function Person (name) {
+> 	  this.foo=() =>{
+> 	//上层作用域是func Person
+>   }
+> }
+> ```
+>
+> 
+
+```js
+//普通函数
+function foo(){
+  console.log(this);
+}
+foo()//window
+var obj = {foo1: foo}
+obj.foo1()//obj
+foo.call("abc")//'abc'
+```
+
+```js
+//箭头函数
+var foo = () => {
+  console.log(this)
+}
+foo()//window
+var obj = {foo1: foo}
+obj.foo1()//window
+foo.call("abc")//window
+```
+
+**应用场景**
+
+```js
+//箭头函数之前
+var obj = {
+  data: [],
+  getData: function() {
+    // 发送网络请求, 将结果放到上面data属性中
+    // 在箭头函数之前的解决方案
+    var _this = this//保存指向obj的this
+    setTimeout(function() {//setTimeout的this指向window
+      var result = ["abc", "cba", "nba"]
+      _this.data = result//使用之前保存的指向obj的_this
+    }, 2000);
+  }
+}
+obj.getData()//隐式绑定 getData的this指向obj
+```
+
+```js
+//箭头函数之后
+var obj = {
+  data: [],
+  getData: function() {
+    // 发送网络请求, 将结果放到上面data属性中
+    setTimeout(() => {
+      var result = ["abc", "cba", "nba"]
+      this.data = result//箭头函数的this指向外层作用域(window)
+    }, 2000);
+  }
+}
+obj.getData()//隐式绑定 getData的this指向obj
+```
+
+ 为什么在setTimeout的回调函数中可以直接使用this呢?
+
+——因为箭头函数并不绑定this对象，那么this引用就会从上层作用域中找到对应的this
+
+**如果getData也是箭头函数 ` getData: () =>{ ` 则this指向外层作用域(getData) (getData的this指向外层作用域window)**
+
+![image-20220610014045561](/Users/wsp/Library/Application Support/typora-user-images/image-20220610014045561.png)
+
+## 箭头函数
+
+- 箭头函数**不会绑定this、arguments**属性;
+- **箭头函数不能作为构造函数来使用**(**不能和new一起来使用**，会抛出错误);
+
+```
+(): 函数的参数 {}: 函数的执行体
+```
+
+- 如果只有一个参数()可以省略
+
+  ```js
+  nums.forEach(item => {
+    console.log(item)
+  })
+  ```
+
+- 如果函数执行体中只有一行代码, 那么可以省略大括号并且会默认将这行代码的执行结果作为返回值
+
+  ```js
+  nums.forEach(item => console.log(item))
+  var newNums = nums.filter(item => item % 2 === 0)
+  console.log(newNums)
+  ```
+
+- 如果函数执行体只有返回一个对象, 那么可以省略return 给返回的对象加上()
+
+  ```js
+  var bar = () => ({ name: "why", age: 18 })
+  var msg = bar();
+  console.log(msg)
+  ```
+
+
+
+# this面试题
+
+```js
+var name = "window";
+
+var person = {
+  name: "person",
+  sayName: function () {
+    console.log(this.name);
+  }
+};
+
+function sayName() {
+  var sss = person.sayName;
+  sss(); // window: 独立函数调用
+  person.sayName(); // person: 隐式调用
+  (person.sayName)(); // person: 隐式调用
+  (b = person.sayName)(); // window: 赋值表达式 间接函数引用 (独立函数调用) 
+}
+
+sayName();
+
+```
+
+```js
+var name = 'window'
+
+var person1 = {
+  name: 'person1',
+  foo1: function () {
+    console.log(this.name)
+  },
+  foo2: () => console.log(this.name),
+  foo3: function () {
+    return function () {
+      console.log(this.name)
+    }
+  },
+  foo4: function () {
+    //_this ->person1
+    return () => {//返回箭头函数 无this 向上找
+      console.log(this.name)
+    }
+  }
+}
+
+var person2 = { name: 'person2' }
+
+person1.foo1(); // person1(隐式绑定)
+person1.foo1.call(person2); // person2(显示绑定优先级大于隐式绑定)
+
+person1.foo2(); // window(箭头函数不绑定作用域,上层作用域是全局)
+person1.foo2.call(person2); // window
+
+person1.foo3()(); //相当于var fn=person1.foo3();fn()  window(独立函数调用)
+person1.foo3.call(person2)();//相当于var fn=person1.foo3.call(person2);fn() window(独立函数调用)
+person1.foo3().call(person2); // person2(最终调用‘返回函数式’, 使用的是显示绑定)
+
+person1.foo4()(); // person1(箭头函数不绑定this, 上层作用域this是person1)
+person1.foo4.call(person2)(); // person2(把上层作用域被显示的绑定了一个person2)
+person1.foo4().call(person2); // person1(上层找到person1) call对箭头函数无效
+```
+
+```js
+var name = 'window'
+
+function Person (name) {
+  this.name = name
+  this.foo1 = function () {
+    console.log(this.name)
+  },
+  this.foo2 = () => console.log(this.name),
+  this.foo3 = function () {
+    return function () {
+      console.log(this.name)
+    }
+  },
+  this.foo4 = function () {
+    return () => {
+      console.log(this.name)
+    }
+  }
+}
+
+var person1 = new Person('person1')
+var person2 = new Person('person2')
+
+person1.foo1() // person1
+person1.foo1.call(person2) // person2(显示高于隐式绑定)
+
+person1.foo2() // person1 (上层作用域中的this是person1)
+person1.foo2.call(person2) // person1 (上层作用域中的this是person1) call对箭头函数无效
+
+person1.foo3()() // window(独立函数调用)
+person1.foo3.call(person2)() // window //foo3绑在了person2 返回的func依然是独立函数调用
+person1.foo3().call(person2) // person2 //foo3返回的func 显式绑定在person2
+
+person1.foo4()() // person1
+person1.foo4.call(person2)() // person2 //foo4的this显式绑定在person2, 返回的arrow func的this为上层作用域(foo4) 
+person1.foo4().call(person2) // person1 //foo4隐式绑定person1 arrow func指向person call不能绑定arrow func
+
+
+```
+
+```js
+var name = 'window'
+
+function Person (name) {
+  this.name = name
+  this.obj = {
+    name: 'obj',
+    foo1: function () {
+      return function () {
+        console.log(this.name)
+      }
+    },
+    foo2: function () {
+      return () => {
+        console.log(this.name)
+      }
+    }
+  }
+}
+
+var person1 = new Person('person1')
+var person2 = new Person('person2')
+
+person1.obj.foo1()() // window //返回的func是独立函数调用
+person1.obj.foo1.call(person2)() // window //foo1显示绑定person2 返回的func是独立函数调用
+person1.obj.foo1().call(person2) // person2 //foo1返回的func显示绑定person2
+
+person1.obj.foo2()() // obj //arrow func this找上层作用域(foo2) foo隐式绑定在obj  所以af->obj
+person1.obj.foo2.call(person2)() // person2  //arrow func this找上层作用域(foo2) foo2显示绑定在person2  所以af->person2
+person1.obj.foo2().call(person2) //obj af不能用call绑定 
+```
 
