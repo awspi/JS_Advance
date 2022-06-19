@@ -61,8 +61,8 @@ class Student extends Person {
 var stu = new Student("why", 18, 111)
 console.log(stu)
 
-// console.log(Object.getOwnPropertyDescriptors(stu.__proto__))
-// console.log(Object.getOwnPropertyDescriptors(stu.__proto__.__proto__))
+console.log(Object.getOwnPropertyDescriptors(stu.__proto__))
+console.log(Object.getOwnPropertyDescriptors(stu.__proto__.__proto__))
 
 stu.eating()
 stu.running()
@@ -72,4 +72,5 @@ stu.personMethod()
 Student.staticMethod()
 
 console.log(Object.getOwnPropertyDescriptors(Person))
+
 
