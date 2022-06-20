@@ -24,7 +24,7 @@ const names = ["abc", "cba", "nba"]
 for (const item of names) {
   console.log(item)
 }
-
+//相当于⬇️
 // {
 //   const item = "abc"
 //   console.log(item)
@@ -36,3 +36,8 @@ for (const item of names) {
 // }
 
 // console.log(item)
+
+
+for(var i=0;i<names.length;i++){
+  console.log(names[i]);
+}
