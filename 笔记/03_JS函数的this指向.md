@@ -4,15 +4,15 @@ JavaScript中的this更加灵活，无论是它出现的位置还是它代表的
 
 > 编写一个obj的对象，有this和没有this的区别:
 >
-> ![image-20220609183710198](/Users/wsp/Library/Application Support/typora-user-images/image-20220609183710198.png)
+> ![image-20220609183710198](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242236831.png)
 >
-> ![image-20220609183728750](/Users/wsp/Library/Application Support/typora-user-images/image-20220609183728750.png)
+> ![image-20220609183728750](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242236717.png)
 
 ## **全局this指向**
 
 this在**全局**作用于下指向什么?————在**浏览器中测试就是指向window**
 
-![image-20220609184013638](/Users/wsp/Library/Application Support/typora-user-images/image-20220609184013638.png)
+![image-20220609184013638](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242236649.png)
 
 ```js
 // 在大多数情况下, this都是出现在函数中
@@ -48,7 +48,7 @@ setTimeout(function() {
 
 **forEach(arg1,this的指向)**
 
-![image-20220609232556465](/Users/wsp/Library/Application Support/typora-user-images/image-20220609232556465.png)
+![image-20220609232556465](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242236784.png)
 
 ```js
 var names = ["abc", "cba", "nba"]
@@ -573,7 +573,7 @@ obj.getData()//隐式绑定 getData的this指向obj
 
 **如果getData也是箭头函数 ` getData: () =>{ ` 则this指向外层作用域(getData) (getData的this指向外层作用域window)**
 
-![image-20220610014045561](/Users/wsp/Library/Application Support/typora-user-images/image-20220610014045561.png)
+![image-20220610014045561](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242236597.png)
 
 ## 箭头函数
 

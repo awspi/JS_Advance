@@ -8,7 +8,7 @@
 
 
 
-![image-20220608184456296](/Users/wsp/Library/Application Support/typora-user-images/image-20220608184456296.png)
+![image-20220608184456296](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242226580.png)
 
 
 
@@ -22,7 +22,7 @@ js引擎会在执行代码之前，会在**堆内存**中创建一个全局对�
 - 里面会包含**Date、Array、String、Number、setTimeout、setInterval**等等; 
 - 其中还有一个**window属性**指向自己;
 
-![image-20220608183002569](/Users/wsp/Library/Application Support/typora-user-images/image-20220608183002569.png)
+![image-20220608183002569](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242226925.png)
 
 
 
@@ -42,7 +42,7 @@ var result = num1 + num2
 console.log(result)
 ```
 
-![image-20220608184855421](/Users/wsp/Library/Application Support/typora-user-images/image-20220608184855421.png)
+![image-20220608184855421](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242226919.png)
 
 会经历以下步骤
 
@@ -75,7 +75,7 @@ console.log(result)
    - 这个过程也称之为**变量的作用域提升(hoisting)**
 2. **第二部分:**在代码执行中，对变量赋值，或者执行其他的函数;
 
-![image-20220608184319882](/Users/wsp/Library/Application Support/typora-user-images/image-20220608184319882.png)
+![image-20220608184319882](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242226885.png)
 
 
 
@@ -85,7 +85,7 @@ console.log(result)
 
 FEC中包含三部分内容:
 
-![image-20220608200114358](/Users/wsp/Library/Application Support/typora-user-images/image-20220608200114358.png)
+![image-20220608200114358](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242226188.png)
 
 1. 第一部分:在解析函数成为AST树结构时，会创建一个**Activation Object(AO**):
    - AO中包含**形参、arguments、函数定义和指向函数对象、定义的变量**;
@@ -96,12 +96,12 @@ FEC中包含三部分内容:
 
 **FEC被放入到ECS中**
 
-![image-20220608202512234](/Users/wsp/Library/Application Support/typora-user-images/image-20220608202512234.png)
+![image-20220608202512234](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242227461.png)
 
 
 **FEC开始执行代码**
 
-![image-20220608202432418](/Users/wsp/Library/Application Support/typora-user-images/image-20220608202432418.png)
+![image-20220608202432418](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242227604.png)
 
 example
 
@@ -116,7 +116,7 @@ function foo(num) {
 }
 ```
 
-![image-20220608195741019](/Users/wsp/Library/Application Support/typora-user-images/image-20220608195741019.png)
+![image-20220608195741019](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242227330.png)
 
 
 
@@ -139,7 +139,7 @@ function foo(num) {
 }
 ```
 
-![image-20220608202930110](/Users/wsp/Library/Application Support/typora-user-images/image-20220608202930110.png)
+![image-20220608202930110](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242227492.png)
 
 ### 函数调用函数
 
@@ -160,7 +160,7 @@ function bar() {
 bar()
 ```
 
-![image-20220608204743848](/Users/wsp/Library/Application Support/typora-user-images/image-20220608204743848.png)
+![image-20220608204743848](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206242227792.png)
 
 
 
