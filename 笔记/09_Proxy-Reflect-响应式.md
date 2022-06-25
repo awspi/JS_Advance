@@ -336,3 +336,360 @@ console.log(teacher);
 console.log(teacher.__proto__===Teacher.prototype);//true
 ```
 
+# 响应式
+
+## 响应式函数的实现watchFn
+
+封装一个新的函数watchFn,凡是传入的函数，就是需要响应式的,其他默认定义的函数都是不需要响应式的;
+
+```js
+let reactiveFns=[]
+function watchFn(fn){
+  reactiveFns.push(fn)
+}
+```
+
+
+
+## 响应式依赖的收集Depend
+
+设计一个类，这个类用于管理某一个对象的某一个属性的所有响应式函数 相当于替代了原来的简单 reactiveFns 的数组;
+
+```js
+//使用数组收集函数不方便管理
+//使用一个类
+class Depend{
+  constructor(){
+    this.reactiveFns=[]
+  }
+  addDepend(fn){
+    this.reactiveFns.push(fn)
+  }
+  notify(){
+    this.reactiveFns.forEach(fn=>{
+      fn()
+    })
+  }
+}
+```
+
+
+
+## 监听对象的变化Proxy
+
+- 方式一:通过 Object.defineProperty的方式(vue2采用的方式); 
+- 方式二:通过new Proxy的方式(vue3采用的方式);
+
+```js
+//监听对象的属性变量 Proxy
+//设置代理对象
+const objProxy=new Proxy(obj,{
+  get:function(target,key,receiver){
+    return Reflect.get(target,key,receiver)
+  },
+  set:function(target,key,newValue,receiver){
+    Reflect.set(target,key,newValue,receiver)
+    depend.notify()//
+  },
+})
+```
+
+
+
+## 对象的依赖管理
+
+![image-20220625151918946](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206251519012.png)
+
+![image-20220625165824904](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202206251658940.png)
+
+**正确的依赖收集**
+
+之前收集依赖的地方是在 watchFn 中:
+
+但是这种收集依赖的方式我们根本不知道是哪一个key的哪一个depend需要收集依赖 只能针对一个单独的depend对象来添加依赖对象;
+
+**正确的应该是我们调用了Proxy的get捕获器时就收集依赖**
+
+- 因为如果一个函数中使用了某个对象的key，那么它应该被收集依赖;
+
+```js
+const objProxy=new Proxy(obj,{//get就收集依赖
+    //根据target,key 获取对应的depend
+    get:function(target,key,receiver){
+    const depend=getDepend(target,key)
+    //给depend对象中添加响应式函数
+    depend.addDepend(activeReaciveFn)
+    return Reflect.get(target,key,receiver)
+  },
+  set:function(target,key,newValue,receiver){//set就notify()
+    Reflect.set(target,key,newValue,receiver)
+    const depend=getDepend(target,key)
+    depend.notify()
+  },
+})
+```
+
+## 对Depend重构
+
+问题1:我们并不希望将添加reactiveFn放到get中，以为它是属于Dep的行为;
+
+在depend类中定义新函数depend 在这个新函数中判断全局activeReaciveFn是否为null,不为null就收集
+
+```js
+class Depend{  
+	depend(){
+    if (activeReaciveFn){
+      this.addDepend(activeReaciveFn)
+    }
+  }
+```
+
+```js
+get:function(target,key,receiver){
+    const depend=getDepend(target,key)
+    //给depend对象中添加响应式函数
+    depend.depend()
+    return Reflect.get(target,key,receiver)
+  }
+```
+
+问题2:如果函数中有用到两次key，比如name，那么这个函数会被收集两次
+
+```js
+watchFn(function(){
+  console.log(objProxy.name,'----');//每次收集到依赖objProxy.name都会addDepend
+  console.log(objProxy.name,'++++');
+  console.log(objProxy.name,'++++');
+})
+```
+
+Depend内部reactiveFns不使用数组，而是使用Set;
+
+```js
+class Depend{
+  constructor(){
+    this.reactiveFns=new Set()
+  }
+}
+```
+
+## 创建响应式对象
+
+目前的响应式是针对于obj一个对象的，我们可以创建出来一个函数，针对所有的对象都可以变成响应式对象:
+
+创建响应式对象函数
+
+```
+//创建响应式对象函数 Proxy +rRflect
+function reactive(obj){
+  return new Proxy(obj,{//get就收集依赖
+    //根据target,key 获取对应的depend
+    get:function(target,key,receiver){
+    const depend=getDepend(target,key)
+    //给depend对象中添加响应式函数
+    depend.depend()
+    return Reflect.get(target,key,receiver)
+  },
+  set:function(target,key,newValue,receiver){//set就notify()
+    Reflect.set(target,key,newValue,receiver)
+    const depend=getDepend(target,key)
+    depend.notify()
+  }
+})
+}
+
+```
+
+## 🚩VUE3响应式
+
+此时,完成的就是vue3的reactive函数的功能
+
+完整代码:
+
+```js
+// 响应式依赖的收集 Depend
+class Depend {
+  constructor() {
+    this.reactiveFns = new Set()
+  }
+  addDepend(fn) {
+    this.reactiveFns.add(fn)
+  }
+  notify() {
+    this.reactiveFns.forEach(fn => fn())
+  }
+  depend() {
+    activeReaciveFn && this.addDepend(activeReaciveFn)
+  }
+}
+
+//封装响应式函数
+let activeReaciveFn = null
+function watchFn(fn) {
+  activeReaciveFn = fn
+  fn()
+  activeReaciveFn = null
+}
+
+const targetMap = new WeakMap()
+//封装一个获取Depend的函数
+function getDepend(target, key) {
+  //根据target对象获取map
+  let map = targetMap.get(target)
+  if (!map) {
+    map = new Map()
+  }
+  targetMap.set(target, map)
+  //根据key获取depend对象
+  let depend = map.get(key)
+  if (!depend) {
+    depend = new Depend()
+    map.set(key, depend)//加入depend
+  }
+  return depend
+}
+
+
+//创建响应式对象Proxy +rRflect
+function reactive(obj) {
+  return new Proxy(obj, {//get就收集依赖
+    //根据target,key 获取对应的depend
+    get: function (target, key, receiver) {
+      const depend = getDepend(target, key)
+      //给depend对象中添加响应式函数
+      depend.depend()
+      return Reflect.get(target, key, receiver)
+    },
+    set: function (target, key, newValue, receiver) {//set就notify()
+      Reflect.set(target, key, newValue, receiver)
+      const depend = getDepend(target, key)
+      depend.notify()
+    }
+  })
+}
+
+
+
+
+
+// ########TEST#########a
+
+obj = {
+  name: 'pithy',//depend对象
+  age: 18
+}
+const objProxy = reactive(obj)
+
+watchFn(function () {
+  console.log(objProxy.name, '----');
+  console.log(objProxy.name, '++++');
+  console.log(objProxy.name, '++++');
+})
+watchFn(function () {
+  console.log(objProxy.age, '####');
+})
+
+console.log('-——————————————————————————————————');
+
+```
+
+
+
+## 🚩VUE2响应式
+
+VUE2监听对象的变化通过 是通过Object.defineProperty的方式
+
+完整代码:
+
+```js
+// 响应式依赖的收集 Depend
+class Depend{
+  constructor(){
+    this.reactiveFns=new Set()
+  }
+  addDepend(fn){
+    this.reactiveFns.add(fn)
+  }
+  notify(){
+    this.reactiveFns.forEach(fn=>{
+      fn()
+    })
+  }
+  depend(){
+    if (activeReaciveFn){
+      this.addDepend(activeReaciveFn)
+    }
+  }
+}
+
+//封装响应式函数
+let activeReaciveFn=null
+function watchFn(fn){
+  activeReaciveFn=fn
+  fn()
+  activeReaciveFn=null
+}
+
+const targetMap=new WeakMap()
+
+//封装获取Depend的函数
+function getDepend(target,key){
+  //根据target对象获取map
+  let map = targetMap.get(target)
+  if(!map){
+    map=new Map()
+  }
+  targetMap.set(target,map)
+  //根据key获取depend对象
+  let depend=map.get(key)
+  if(!depend){
+    depend=new Depend()
+    map.set(key, depend)//加入depend
+  }
+  return depend
+}
+
+ 
+//创建响应式对象 defineProperty
+function reactive(obj){
+  Object.keys(obj).forEach(key=>{
+    let value=obj[key]
+    Object.defineProperty(obj,key,{
+      get:function(){
+        const depend=getDepend(obj,key)
+        depend.depend()
+        return value
+      },
+      set:function(newValue){
+        value=newValue
+        const depend=getDepend(obj,key)
+        depend.notify()
+      },
+    })
+  })
+  return obj
+}
+
+
+
+// ########TEST#########
+
+obj={
+  name:'pithy',//depend对象
+  age:18
+}
+const objProxy=reactive(obj)
+
+watchFn(function(){
+  console.log(objProxy.name,'----');
+  console.log(objProxy.name,'++++');
+  console.log(objProxy.name,'++++');
+})
+watchFn(function(){
+  console.log(objProxy.age,'####');
+})
+
+console.log('-——————————————————————————————————');
+objProxy.name='123'
+```
+
