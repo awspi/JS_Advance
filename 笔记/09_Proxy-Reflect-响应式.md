@@ -431,7 +431,7 @@ const objProxy=new Proxy(obj,{//get就收集依赖
 
 ## 对Depend重构
 
-问题1:我们并不希望将添加reactiveFn放到get中，以为它是属于Dep的行为;
+问题1:我们并不希望将添加reactiveFn放到get中，因为它是属于Dep的行为;
 
 在depend类中定义新函数depend 在这个新函数中判断全局activeReaciveFn是否为null,不为null就收集
 
