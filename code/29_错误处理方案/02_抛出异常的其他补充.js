@@ -19,12 +19,12 @@ function foo(type) {
     // throw new HYError(-1001, "type不能为0~")
 
     // 4.提供了一个Error
-    // const err = new Error("type不能为0")
-    // err.name = "why"
-    // err.stack = "aaaa"
+    const err = new Error("type不能为0")
+    err.name = "why"
+    err.stack = "aaaa"
 
     // 5.Error的子类
-    const err = new TypeError("当前type类型是错误的~")
+    // const err = new TypeError("当前type类型是错误的~")
 
     throw err
 
@@ -38,7 +38,6 @@ function foo(type) {
 foo(0)
 
 console.log("后续的代码继续执行~")
-
 
 // function test() {
 //   console.log("test")
