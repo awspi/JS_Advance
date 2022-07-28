@@ -6,7 +6,7 @@
 // import { name as fName, age as fAge, foo as fFoo } from './foo.js'
 
 // 3.导入方式三: 将导出的所有内容放到一个标识符中
-import * as foo from './foo.js'
+import * as foo from "./foo.js"
 
 console.log(foo.name)
 console.log(foo.age)

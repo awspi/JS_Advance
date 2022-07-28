@@ -14,5 +14,5 @@
 // export { timeFormat, priceFormat } from './format.js'
 
 // 3.导出方式三:
-export * from './math.js'
-export * from './format.js'
+export * from "./math.js"
+export * from "./format.js"
