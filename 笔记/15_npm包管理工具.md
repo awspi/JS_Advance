@@ -171,13 +171,78 @@ semver版本规范是X.Y.Z:
 
 **更多的命令** https://docs.npmjs.com/cli-documentation/cli 
 
+
+
+## 局部命令的执行
+
+案例:那么如何使用项目(局部)的webpack，常见的是两种方式: 
+
+**方式一:明确查找到node_module下面的webpack**
+
+- 在终端中使用如下命令(在项目根目录下) 
+
+- ```bash
+  ./node_modules/.bin/webpack --version
+  ```
+
+**方式二:在 scripts定义脚本，来执行webpack;**
+
+- 修改package.json中的scripts
+
+- ```json
+     "scripts": {
+        "webpack": "webpack --version"
+        }
+  ```
+
+**方式三:使用npx**
+
+- ```bash
+   npx webpack --version
+  ```
+
+
+
 ## npx工具
 
- npx的作用非常多，但是比较常见的是使用它来调用项目中的某个模块的指令。
+npx是npm5.2之后自带的一个命令。
+
+npx的作用非常多，但是比较常见的是**使用它来调用项目中的某个模块的指令。**
+
+npx的原理非常简单，**它会到当前目录的node_modules/.bin目录下查找对应的命令;**
 
 # yarn工具
 
+yarn 是为了弥补 npm 的一些缺陷而出现的;虽然从npm5版本开始，进行了很多的升级和改进，但是依然很多人喜欢使用yarn;
 
+![image-20220728235759149](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202207282357198.png)
+
+
+
+# cnpm工具
+
+**npm设置镜像:**
+
+查看npm镜像:
+
+```bash
+npm config get registry # npm config get registry 
+```
+
+我们可以直接设置npm的镜像:
+
+```bash
+npm config set registry https://registry.npm.taobao.org
+```
+
+**cnpm** 不修改npm的镜像
+
+可以使用cnpm，并且将cnpm设置为淘宝的镜像:
+
+```bash
+npm install -g cnpm --registry=https://registry.npm.taobao.org 
+cnpm config get registry # https://r.npm.taobao.org/
+```
 
 # 发布包 
 
