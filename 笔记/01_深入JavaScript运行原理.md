@@ -183,6 +183,8 @@ bar()
 
 
 
+
+
 ```js
 var n=100
 function foo(){
@@ -340,5 +342,7 @@ console.log(a);//ReferenceError: a is not defined
 console.log(b);//100
 ```
 
+#### 🆕函数参数的作用域
 
+![IMG_F376C028A223-1](https://wsp-typora.oss-cn-hangzhou.aliyuncs.com/images/202207301239456.jpeg)
 
