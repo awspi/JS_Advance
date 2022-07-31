@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+  <input type="text">
+  <button id="cancel">取消</button>
+
+  <!-- <script src="./01_debounce-v1-基本实现.js"></script> -->
+  <!-- <script src="./03_debounce-v3-立即执行.js"></script> -->
+  <!-- <script src="./04_debounce-v4-取消功能.js"></script> -->
+  <script src="./05_debounce-v5-函数返回值-promise.js"></script>
+  <script>
+    const inputEl = document.querySelector("input")
+    let counter = 0
+
+    const inputChange = function (event) {
+      console.log(`发送了第${++counter}次网络请求`, this, event)
+      return 'returnRes'
+    }
+
+    const debounceChange = debounce(inputChange, 1000, false)
+    //当前只能使用这种方法因为promise类型的——debounce是在debounceChange运行时产生的
+    const temCb = () => {
+      debounceChange().then(res => console.log(res))
+    }
+    inputEl.oninput = temCb
+
+    // 取消功能
+    const cancelBtn = document.querySelector("#cancel")
+    cancelBtn.onclick = function () {
+      debounceChange.cancel()
+    }
+  </script>
+</body>
+
+</html>
