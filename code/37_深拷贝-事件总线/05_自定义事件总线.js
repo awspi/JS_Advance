@@ -1,9 +1,9 @@
-class HYEventBus {
+class FakeEventBus {
   constructor() {
     this.eventBus = {}
   }
-
   on(eventName, eventCallback, thisArg) {
+    //TODO 检查参数类型
     let handlers = this.eventBus[eventName]
     if (!handlers) {
       handlers = []
@@ -11,48 +11,44 @@ class HYEventBus {
     }
     handlers.push({
       eventCallback,
-      thisArg
+      thisArg,
     })
   }
-
   off(eventName, eventCallback) {
     const handlers = this.eventBus[eventName]
     if (!handlers) return
-    const newHandlers = [...handlers]
-    for (let i = 0; i < newHandlers.length; i++) {
-      const handler = newHandlers[i]
+    const newHandler = [...handlers]
+    for (let i = 0; i < newHandler.length; i++) {
+      const handler = newHandler[i]
       if (handler.eventCallback === eventCallback) {
         const index = handlers.indexOf(handler)
         handlers.splice(index, 1)
       }
     }
   }
-
   emit(eventName, ...payload) {
     const handlers = this.eventBus[eventName]
     if (!handlers) return
-    handlers.forEach(handler => {
+    handlers.forEach((handler) => {
       handler.eventCallback.apply(handler.thisArg, payload)
     })
   }
 }
 
-const eventBus = new HYEventBus()
+const eventBus = new FakeEventBus()
 
-// main.js
-eventBus.on("abc", function() {
-  console.log("监听abc1", this)
-}, {name: "why"})
-
-const handleCallback = function() {
-  console.log("监听abc2", this)
+// TEST
+//*handleCallback
+const handleCallback1 = function () {
+  console.log("监听eventName|1", this, arguments)
 }
-eventBus.on("abc", handleCallback, {name: "why"})
-
-// utils.js
-eventBus.emit("abc", 123)
-
-// 移除监听
-eventBus.off("abc", handleCallback)
-eventBus.emit("abc", 123)
-
+const handleCallback2 = function () {
+  console.log("监听eventName|2", this, arguments)
+}
+//
+eventBus.on("eventName", handleCallback1, { name: "pithy" })
+eventBus.on("eventName", handleCallback2, { name: "awspi" })
+//
+eventBus.off("eventName", handleCallback1)
+//
+eventBus.emit("eventName", "arg1", "arg2")
